@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Press Start 2P', cursive;
+            color: #fff;
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0ff;
+            }
+            to {
+                text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #0ff;
+            }
+        }
+
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 1em;
+        }
+
+        .score, .high-score {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(0, 255, 0, 0.3);
+        }
+
+        canvas {
+            border: 3px solid rgba(0, 255, 0, 0.5);
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #88ff88;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: #ff3333;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #ff3333;
+            animation: pulse 2s infinite;
+            min-width: 300px;
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .game-over h2 {
+            margin: 0 0 20px 0;
+            font-size: 2em;
+            text-shadow: 0 0 10px #ff3333;
+        }
+
+        .game-over p {
+            font-size: 1.2em;
+            margin: 20px 0;
+            color: #fff;
+        }
+
+        .game-over #finalScore {
+            color: #ff3333;
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #ff3333;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 20px rgba(255, 51, 51, 0.3); }
+            50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 40px rgba(255, 51, 51, 0.5); }
+            100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 20px rgba(255, 51, 51, 0.3); }
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1em;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Press Start 2P', cursive;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .power-up {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .speed-controls {
+            margin: 15px 0;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-controls label {
+            color: #88ff88;
+            margin-right: 10px;
+            font-size: 0.8em;
+        }
+
+        .speed-btn {
+            padding: 8px 15px;
+            font-size: 0.7em;
+            background: rgba(0, 0, 0, 0.5);
+            color: #88ff88;
+            border: 1px solid #88ff88;
+            margin: 0 5px;
+        }
+
+        .speed-btn:hover {
+            transform: scale(1.05);
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        .speed-btn.active {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1 class="game-title">SNAKE GAME</h1>
+    <div class="game-container">
+        <div class="stats-container">
+            <div class="score">SCORE: <span id="score">0</span></div>
+            <div class="high-score">HIGH SCORE: <span id="highScore">0</span></div>
+        </div>
+        <div class="speed-controls">
+            <label>SPEED:</label>
+            <button onclick="setGameSpeed('slow')" class="speed-btn" id="slowBtn">SLOW</button>
+            <button onclick="setGameSpeed('normal')" class="speed-btn active" id="normalBtn">NORMAL</button>
+            <button onclick="setGameSpeed('fast')" class="speed-btn" id="fastBtn">FAST</button>
+        </div>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="controls">
+            ↑ ↓ → ← : Move Snake<br>
+            SPACE : Pause Game<br>
+            P : Power-up
+        </div>
+        <div id="gameOver" class="game-over">
+            <h2>GAME OVER!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button onclick="restartGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+    <div id="powerUp" class="power-up">
+        SPEED BOOST ACTIVE!
+    </div>
+    <script src="game.js"></script>
+</body>
+</html> 
